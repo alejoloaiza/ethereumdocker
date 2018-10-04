@@ -1,0 +1,140 @@
+version: '3'
+services:
+  ethereumnode1:
+    hostname: ethereumnode1
+    image: ethereum/client-go:alpine
+    ports:
+      - '30303:30303'
+      - '8545:8545'
+    volumes:
+      - 0:/eth
+      - ~/go/src/ethereumdocker/ethash:/eth/ethash
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"ethash":{}},"nonce":"0x0","timestamp":"0x5bb54b1d","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x80000","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"5766bb87ff438daae88320ac39885c28baa7498f":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"a5da0770cfc766392d91b0bd4d5fb5344c4d45bf":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ace57893001a986d45a5be4aae90f56a5709f81d":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo '["enode://d7ce62ff1ef6625ca0094d9f322f82bdb05e9fc9cac2a942fc60c72388f565dfdaf39127556c1fdd6d2de0bccdd3ec96527689bcd1b689eba4756da5700eaed2@172.16.239.10:30303?discport=0","enode://997f6d2353d2ba7ed6c777cbabd431c9c081e50fb6810b954f264505a503fe2a19ac5b2018f5b654e7722173a828e23edf13cfdaf1e65004d5c1b71377bbe658@172.16.239.11:30303?discport=0","enode://d8e3778c4267138ed93ba724782d44e036caed8dfcb8cad26adb547ffa4c8c7dd083bdc245afd7be7acc183feffddb04caa5ad332180b54884977591b96b68d5@172.16.239.12:30303?discport=0"]' > /eth/geth/static-nodes.json
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode1" \
+        --ethash.dagdir "/eth/ethash" \
+        --rpc \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --networkid "333" \
+        --etherbase "0xace57893001a986d45a5be4aae90f56a5709f81d" \
+        --nat "any" \
+        --nodekeyhex "e2bc224efcd609eba3bb609c31b542379c45c47ea135feb79158d2ca0146c2ab" \
+        --mine \
+        --minerthreads 1 \
+        --nodiscover \
+        --debug \
+        --metrics \
+        --syncmode "full" \
+        --gasprice 0
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.10
+  ethereumnode2:
+    hostname: ethereumnode2
+    image: ethereum/client-go:alpine
+    ports:
+      - '30304:30303'
+      - '8546:8545'
+    volumes:
+      - 1:/eth
+      - ~/go/src/ethereumdocker/ethash:/eth/ethash
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"ethash":{}},"nonce":"0x0","timestamp":"0x5bb54b1d","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x80000","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"5766bb87ff438daae88320ac39885c28baa7498f":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"a5da0770cfc766392d91b0bd4d5fb5344c4d45bf":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ace57893001a986d45a5be4aae90f56a5709f81d":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo '["enode://d7ce62ff1ef6625ca0094d9f322f82bdb05e9fc9cac2a942fc60c72388f565dfdaf39127556c1fdd6d2de0bccdd3ec96527689bcd1b689eba4756da5700eaed2@172.16.239.10:30303?discport=0","enode://997f6d2353d2ba7ed6c777cbabd431c9c081e50fb6810b954f264505a503fe2a19ac5b2018f5b654e7722173a828e23edf13cfdaf1e65004d5c1b71377bbe658@172.16.239.11:30303?discport=0","enode://d8e3778c4267138ed93ba724782d44e036caed8dfcb8cad26adb547ffa4c8c7dd083bdc245afd7be7acc183feffddb04caa5ad332180b54884977591b96b68d5@172.16.239.12:30303?discport=0"]' > /eth/geth/static-nodes.json
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode2" \
+        --ethash.dagdir "/eth/ethash" \
+        --rpc \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --networkid "333" \
+        --etherbase "0x5766bb87ff438daae88320ac39885c28baa7498f" \
+        --nat "any" \
+        --nodekeyhex "36558acde3baeec1328680b35f7f2d265c3fd4face46479e32e49de4d0cbb53d" \
+        --mine \
+        --minerthreads 1 \
+        --nodiscover \
+        --debug \
+        --metrics \
+        --syncmode "full" \
+        --gasprice 0
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.11
+  ethereumnode3:
+    hostname: ethereumnode3
+    image: ethereum/client-go:alpine
+    ports:
+      - '30305:30303'
+      - '8547:8545'
+    volumes:
+      - 2:/eth
+      - ~/go/src/ethereumdocker/ethash:/eth/ethash
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"ethash":{}},"nonce":"0x0","timestamp":"0x5bb54b1d","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x80000","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"5766bb87ff438daae88320ac39885c28baa7498f":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"a5da0770cfc766392d91b0bd4d5fb5344c4d45bf":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ace57893001a986d45a5be4aae90f56a5709f81d":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo '["enode://d7ce62ff1ef6625ca0094d9f322f82bdb05e9fc9cac2a942fc60c72388f565dfdaf39127556c1fdd6d2de0bccdd3ec96527689bcd1b689eba4756da5700eaed2@172.16.239.10:30303?discport=0","enode://997f6d2353d2ba7ed6c777cbabd431c9c081e50fb6810b954f264505a503fe2a19ac5b2018f5b654e7722173a828e23edf13cfdaf1e65004d5c1b71377bbe658@172.16.239.11:30303?discport=0","enode://d8e3778c4267138ed93ba724782d44e036caed8dfcb8cad26adb547ffa4c8c7dd083bdc245afd7be7acc183feffddb04caa5ad332180b54884977591b96b68d5@172.16.239.12:30303?discport=0"]' > /eth/geth/static-nodes.json
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode3" \
+        --ethash.dagdir "/eth/ethash" \
+        --rpc \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --networkid "333" \
+        --etherbase "0xa5da0770cfc766392d91b0bd4d5fb5344c4d45bf" \
+        --nat "any" \
+        --nodekeyhex "71ca918c52d57f0f8fc3cf277522887f9428a778cf3c803e05a3b54ca8239b2d" \
+        --mine \
+        --minerthreads 1 \
+        --nodiscover \
+        --debug \
+        --metrics \
+        --syncmode "full" \
+        --gasprice 0
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.12
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+volumes:
+  "0":
+  "1":
+  "2":
+

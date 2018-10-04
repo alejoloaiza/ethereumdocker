@@ -1,0 +1,161 @@
+version: '3'
+services:
+  bootnode:
+    hostname: bootnode
+    image: ethereum/client-go:alltools-stable
+    ports:
+      - '30310:30310'
+    volumes:
+      - 0:/eth
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth
+        echo '0c7bdf29d1f6f8eae66f7df2dba32b40575c0b7d61a46958fceea8c6c77dc1d2' > /eth/boot.key
+        bootnode -nodekey /eth/boot.key -verbosity 9 -addr :30310
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.9
+  ethereumnode1:
+    hostname: ethereumnode1
+    image: ethereum/client-go:alpine
+    ports:
+      - '30303:30303'
+      - '8545:8545'
+    volumes:
+      - 1:/eth
+    depends_on:
+      - bootnode
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth/keystore/
+        echo '{"address":"ca32f313b2b51ff902bb984c4cfff32bad9c2a46","crypto":{"cipher":"aes-128-ctr","ciphertext":"c267953b0288c14f96a36aafa7e58505c98b8e2b554081aaf34c19f12afd92e7","cipherparams":{"iv":"ea217626d3c45189a80faf99d1809b1a"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"7393ac3fc47442afa6a604946aa8ebcc6d80dcbdaffaa56e547bb06812e49151"},"mac":"0dd837645418420ff55b2cfe245c5d153e897c0721086c397c1aaec9548689e1"},"id":"83a4a4a2-d06a-4475-8853-0cd38d71c8d9","version":3}' > /eth/geth/keystore/account.json
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"clique":{"period":3,"epoch":30000}},"nonce":"0x0","timestamp":"0x5bb5e59b","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b8ee0b7fb117681ea299d22a925daa66fed20bf6aca32f313b2b51ff902bb984c4cfff32bad9c2a460000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"8ee0b7fb117681ea299d22a925daa66fed20bf6a":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ca32f313b2b51ff902bb984c4cfff32bad9c2a46":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo 'pwdnode1' > /eth/pwd.txt
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode1" \
+        --rpc \
+        --keystore "/eth/geth/keystore"  \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
+        --networkid "333" \
+        --nat "any" \
+        --mine \
+        --unlock '0xca32f313b2b51ff902bb984c4cfff32bad9c2a46' \
+        --password '/eth/pwd.txt' \
+        --metrics \
+        --syncmode "full" \
+        --verbosity 4 \
+        --gasprice 0 
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.10
+  ethereumnode2:
+    hostname: ethereumnode2
+    image: ethereum/client-go:alpine
+    ports:
+      - '30304:30303'
+      - '8546:8545'
+    volumes:
+      - 2:/eth
+    depends_on:
+      - bootnode
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth/keystore/
+        echo '{"address":"8ee0b7fb117681ea299d22a925daa66fed20bf6a","crypto":{"cipher":"aes-128-ctr","ciphertext":"055531fab2a6ebb78d20098f50a2b0bb46746af6ddcf0e945bfbea591e58129e","cipherparams":{"iv":"a24286c09030a0d0fa5293596689e3c3"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"b0e472ad3ccbd5b310102b19efbeb4c840cb016c112167e8ac29276b5f84c9c3"},"mac":"2ee1f140cc3233635e62374d96cf09d61bee45cf57b912e087c79a5bedf7693f"},"id":"28ab28d5-edf8-471d-9ebe-f3c8081a1214","version":3}' > /eth/geth/keystore/account.json
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"clique":{"period":3,"epoch":30000}},"nonce":"0x0","timestamp":"0x5bb5e59b","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b8ee0b7fb117681ea299d22a925daa66fed20bf6aca32f313b2b51ff902bb984c4cfff32bad9c2a460000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"8ee0b7fb117681ea299d22a925daa66fed20bf6a":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ca32f313b2b51ff902bb984c4cfff32bad9c2a46":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo 'pwdnode2' > /eth/pwd.txt
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode2" \
+        --rpc \
+        --keystore "/eth/geth/keystore"  \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
+        --networkid "333" \
+        --nat "any" \
+        --mine \
+        --unlock '0x8ee0b7fb117681ea299d22a925daa66fed20bf6a' \
+        --password '/eth/pwd.txt' \
+        --metrics \
+        --syncmode "full" \
+        --verbosity 4 \
+        --gasprice 0 
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.11
+  ethereumnode3:
+    hostname: ethereumnode3
+    image: ethereum/client-go:alpine
+    ports:
+      - '30305:30303'
+      - '8547:8545'
+    volumes:
+      - 3:/eth
+    depends_on:
+      - bootnode
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth/keystore/
+        echo '{"address":"805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b","crypto":{"cipher":"aes-128-ctr","ciphertext":"2b600cfbc8c3c36a2d8a2e2ecde08c41e52b50591fa5573e605d47f91e8cd2a4","cipherparams":{"iv":"352536600013d2767c2369271ae009be"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"5dcb007281f4ecdcefab4041de66bcac61fb4eb745e61eb258c32c7858051e45"},"mac":"3d7cf5a661387eb16ed8e4736d312a000021cfd5351d29432c035f5083b84555"},"id":"072df4af-75a9-4b74-9081-5c6e23423cdc","version":3}' > /eth/geth/keystore/account.json
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"clique":{"period":3,"epoch":30000}},"nonce":"0x0","timestamp":"0x5bb5e59b","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b8ee0b7fb117681ea299d22a925daa66fed20bf6aca32f313b2b51ff902bb984c4cfff32bad9c2a460000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"8ee0b7fb117681ea299d22a925daa66fed20bf6a":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"},"ca32f313b2b51ff902bb984c4cfff32bad9c2a46":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo 'pwdnode3' > /eth/pwd.txt
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode3" \
+        --rpc \
+        --keystore "/eth/geth/keystore"  \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal,admin" \
+        --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
+        --networkid "333" \
+        --nat "any" \
+        --mine \
+        --unlock '0x805eb7d9ad23f280c1af7eaca4d232e04ee4aa2b' \
+        --password '/eth/pwd.txt' \
+        --metrics \
+        --syncmode "full" \
+        --verbosity 4 \
+        --gasprice 0 
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.12
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+volumes:
+  "0":
+  "1":
+  "2":
+  "3":

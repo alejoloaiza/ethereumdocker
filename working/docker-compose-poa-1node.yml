@@ -1,0 +1,52 @@
+version: '3'
+services:
+  ethereumnode1:
+    hostname: ethereumnode1
+    image: ethereum/client-go:alpine
+    ports:
+      - '30303:30303'
+      - '8545:8545'
+    volumes:
+      - 0:/eth
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        mkdir -p /eth/geth/keystore/
+        echo '{"address":"ca32f313b2b51ff902bb984c4cfff32bad9c2a46","crypto":{"cipher":"aes-128-ctr","ciphertext":"c267953b0288c14f96a36aafa7e58505c98b8e2b554081aaf34c19f12afd92e7","cipherparams":{"iv":"ea217626d3c45189a80faf99d1809b1a"},"kdf":"scrypt","kdfparams":{"dklen":32,"n":262144,"p":1,"r":8,"salt":"7393ac3fc47442afa6a604946aa8ebcc6d80dcbdaffaa56e547bb06812e49151"},"mac":"0dd837645418420ff55b2cfe245c5d153e897c0721086c397c1aaec9548689e1"},"id":"83a4a4a2-d06a-4475-8853-0cd38d71c8d9","version":3}' > /eth/geth/keystore/account.json
+        echo '{"config":{"chainId":333,"homesteadBlock":1,"eip150Block":2,"eip150Hash":"0x0000000000000000000000000000000000000000000000000000000000000000","eip155Block":3,"eip158Block":3,"byzantiumBlock":4,"clique":{"period":3,"epoch":30000}},"nonce":"0x0","timestamp":"0x5bb55e0a","extraData":"0x0000000000000000000000000000000000000000000000000000000000000000ca32f313b2b51ff902bb984c4cfff32bad9c2a460000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000","gasLimit":"0x47b760","difficulty":"0x1","mixHash":"0x0000000000000000000000000000000000000000000000000000000000000000","coinbase":"0x0000000000000000000000000000000000000000","alloc":{"ca32f313b2b51ff902bb984c4cfff32bad9c2a46":{"balance":"0x200000000000000000000000000000000000000000000000000000000000000"}},"number":"0x0","gasUsed":"0x0","parentHash":"0x0000000000000000000000000000000000000000000000000000000000000000"}' > /eth/genesis.json
+        echo 'pwdnode1' > /eth/pwd.txt
+        /geth --datadir "/eth" init "/eth/genesis.json"
+        /geth \
+        --identity "ethereumnode1" \
+        --rpc \
+        --keystore "/eth/geth/keystore"  \
+        --rpcaddr "0.0.0.0" \
+        --rpcport "8545" \
+        --rpccorsdomain "*" \
+        --datadir "/eth" \
+        --port "30303" \
+        --rpcapi "db,eth,net,web3,personal" \
+        --networkid "333" \
+        --nat "any" \
+        --mine \
+        --unlock '0xca32f313b2b51ff902bb984c4cfff32bad9c2a46' \
+        --password '/eth/pwd.txt' \
+        --metrics \
+        --syncmode "full" \
+        --verbosity 4 \
+        --gasprice 0 
+        sleep 300000
+    networks:
+      app_net:
+        ipv4_address: 172.16.239.10
+networks:
+  app_net:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+      - subnet: 172.16.239.0/24
+volumes:
+  "0":
+

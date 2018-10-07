@@ -1,1 +1,4 @@
 ethash/
+account.json
+ethereumdocker
+ipc/*

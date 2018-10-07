@@ -24,8 +24,10 @@ services:
     ports:
       - '30303:30303'
       - '8545:8545'
+      - '8551:8546'
     volumes:
       - 1:/eth
+      - ~/go/src/ethereumdocker/ipc:/ipc
     depends_on:
       - bootnode
     entrypoint:
@@ -46,7 +48,11 @@ services:
         --rpccorsdomain "*" \
         --datadir "/eth" \
         --port "30303" \
+        --ipcpath "/ipc/geth.ipc" \
         --rpcapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --ws \
+        --wsapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --wsorigins "*" \
         --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
         --networkid "333" \
         --nat "any" \
@@ -67,6 +73,7 @@ services:
     ports:
       - '30304:30303'
       - '8546:8545'
+      - '8552:8546'
     volumes:
       - 2:/eth
     depends_on:
@@ -90,6 +97,9 @@ services:
         --datadir "/eth" \
         --port "30303" \
         --rpcapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --ws \
+        --wsapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --wsorigins "*" \
         --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
         --networkid "333" \
         --nat "any" \
@@ -110,6 +120,7 @@ services:
     ports:
       - '30305:30303'
       - '8547:8545'
+      - '8553:8546'
     volumes:
       - 3:/eth
     depends_on:
@@ -133,6 +144,9 @@ services:
         --datadir "/eth" \
         --port "30303" \
         --rpcapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --ws \
+        --wsapi "db,eth,net,web3,personal,admin,txpool,debug,shh,miner" \
+        --wsorigins "*" \
         --bootnodes 'enode://f42b58f664b8693b623e88ac800e8f057ccc563d9006ef8c1f43d79aac45085ab6a36e772b6478cf85a9df29c4df66c07445fd7a452b619c251db28779b8f542@172.16.239.9:30310' \
         --networkid "333" \
         --nat "any" \
